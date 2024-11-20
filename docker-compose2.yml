@@ -1,0 +1,56 @@
+version: '3'
+
+services:
+  master:
+    image: mariadb
+    command: --max_allowed_packet=32505856
+    restart: always
+    volumes:
+      - /data/db:/var/lib/mysql
+    networks:
+      - default
+    hostname: weave.cas.local
+    environment:
+      MYSQL_ROOT_PASSWORD: "31nst31n"
+
+  server1:
+    image: avhost/docker-ispconfig:latest
+    ports:
+      - "443:443"
+      - "80:80"
+    volumes: ["/data/amavis:/var/lib/amavis","/data/etc/amavis:/etc/amavis", "/data/letsencrypt:/etc/letsencrypt", "/data/etc/apache2/sites-available:/etc/apache2/sites-available", "/data/etc/apache2/sites-enabled:/etc/apache2/sites-enabled", "/data/www:/var/www/", "/data/backup:/var/backup/", "/data/usr:/usr/local/ispconfig", "/data/etc/cron.d:/etc/cron.d", "/data/kis/bind:/etc/bind"]
+#    volumes: ["/data/backup:/var/backup/"]
+    restart: always
+    depends_on:
+      - master
+    networks:
+      - default
+    hostname: server1.cas.local
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    environment:
+      isp_mysql_hostname: "weave.cas.local"
+      isp_mysql_root_password: "31nst31n"
+      isp_mysql_ispconfig_password: "31nst31n"
+      isp_admin_password: "31nst31n"
+      isp_mysql_master_root_password: "31nst31n"
+      isp_mysql_master_hostname: "weave.cas.local"
+      isp_enable_mail: "n"
+      isp_enable_jailkit: "n"
+      isp_enable_ftp: "n"
+      isp_enable_dns: "n"
+      isp_enable_apache: "y"
+      isp_enable_nginx: "y"
+      isp_enable_firewall: "y"
+      isp_enable_webinterface: "y"
+      isp_enable_multiserver: "y"
+      isp_hostname: "server1"
+      isp_use_ssl: "y"
+      isp_phpmyadmin_blowfish_secret: "advpDZ9wHZXkZSfV78DLRjzSPaTm5yBC"
+
+networks:
+  default:
+    external:
+      name: weave
+
